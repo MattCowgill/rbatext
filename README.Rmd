@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![R-CMD-check](https://github.com/MattCowgill/rbatext/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MattCowgill/rbatext/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The Board of the Reserve Bank of Australia is responsible for monetary policy. It meets 11 times each year. After each meeting, the Governor of the RBA issues a statement outlining the reasons the Board did, or did not, adjust interest rates at that meeting.* 
