@@ -7,14 +7,9 @@
 read_rba_decisions(refresh = TRUE)
 }
 \arguments{
-\item{min_year}{If \code{NULL} (the default), all releases will be returned. If a
-year is specified (eg. \code{2015}), only releases from that year onwards will be
-scraped.}
-
-\item{use_existing}{If \code{TRUE} (the default), pre-scraped data, stored as
-the object \code{rba_decisions}, will be used in the returned object, and only
-newer decisions scraped from the RBA. If \code{FALSE}, all decisions will be
-scraped fresh.}
+\item{refresh}{If \code{TRUE} (the default), the RBA website will be scraped for
+any decisions that are not included in the package's internal data. If
+\code{FALSE}, only the, pre-scraped data will be returned.}
 }
 \description{
 Scrape RBA monetary policy decision media releases in a tidy tibble

@@ -1,8 +1,7 @@
 #' Scrape RBA monetary policy decision media releases in a tidy tibble
-#' @param use_existing If `TRUE` (the default), pre-scraped data, stored as
-#' the object `rba_decisions`, will be used in the returned object, and only
-#' newer decisions scraped from the RBA. If `FALSE`, all decisions will be
-#' scraped fresh.
+#' @param refresh If `TRUE` (the default), the RBA website will be scraped for
+#' any decisions that are not included in the package's internal data. If
+#' `FALSE`, only the, pre-scraped data will be returned.
 #' @author Matt Cowgill
 #' @examples
 #' \dontrun{
