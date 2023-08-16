@@ -1,5 +1,7 @@
 ---
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -47,6 +49,63 @@ decisions
 ```
 
 This returns a tidy tibble containing the full text of each monetary policy decision since 1990. 
+
+
+### Working with this text data
+
+Here's an example of how to use the wonderful [`{tidytext}`](https://www.tidytextmining.com) package to work with this text data. 
+
+First we 'unnest' the text statements, counting the number of occurrences of each word in each year:
+```{r}
+library(dplyr)
+library(lubridate)
+library(tidytext)
+
+raw_word_counts <- decisions %>% 
+  mutate(year = year(date)) %>% 
+  unnest_tokens(word, text) %>% 
+  group_by(year, word) %>% 
+  count() 
+
+raw_word_counts
+```
+
+Then we remove 'stop words' (common words like 'the' or 'if'), as well as removing numbers from the text:
+
+```{r}
+word_counts <- raw_word_counts %>% 
+  anti_join(stop_words,
+            by = "word") %>% 
+  filter(is.na(suppressWarnings(as.numeric(word))))
+
+word_counts
+
+```
+
+Then we calculate the [term frequency-inverse document frequency](https://www.tidytextmining.com/tfidf) of each word for each year. This is the number of times a word is used in a given year, adjusted by the number of times the word is used across all years.
+
+```{r}
+
+year_tfidfs <- word_counts %>% 
+  bind_tf_idf(word, year, n)
+
+year_tfidfs
+
+```
+
+Now we have this measure of which words best characterise the statements issued in a given year. Let's create a table showing the top 3 words for each year, ranked by tf-idf:
+
+```{r}
+year_tfidfs %>% 
+  group_by(year) %>% 
+  mutate(rank = rank(desc(tf_idf),
+                     ties.method = "first")) %>% 
+  filter(rank <= 3) %>% 
+  arrange(rank) %>% 
+  group_by(year) %>% 
+  summarise(top_words = paste(word, collapse = ", ")) %>% 
+  knitr::kable()
+```
 
 ### The small print 
 *Prior to December 2007, a media release was only issued if the Board decided to adjust monetary policy. Since that time, statements have been issued after each meeting, regardless of the outcome.
