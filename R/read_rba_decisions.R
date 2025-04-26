@@ -28,7 +28,7 @@ scrape_decisions <- function(min_year = NULL) {
   monpol_page <- read_html("https://www.rba.gov.au/monetary-policy/")
 
   monpol_year_url_fragments <- monpol_page %>%
-    html_elements("li:nth-child(5) li li a") %>%
+    html_elements("li:nth-child(3) li li a") %>%
     html_attr("href")
 
   monpol_year_urls <- paste0(
@@ -37,11 +37,10 @@ scrape_decisions <- function(min_year = NULL) {
   )
 
   if (!is.null(min_year)) {
-    years <- gsub(
-      "https://www.rba.gov.au/monetary-policy/int-rate-decisions/|/",
-      "",
-      monpol_year_urls
-    ) %>%
+    years <- stringr::str_sub(
+      monpol_year_urls,
+      -5, -2
+    )%>%
       as.numeric()
 
     monpol_year_urls <- monpol_year_urls[years >= min_year]
@@ -63,7 +62,7 @@ scrape_decisions <- function(min_year = NULL) {
       read_html()
 
     raw_text <- page %>%
-      html_elements("div.rss-mr-content") %>%
+      html_elements("#content") %>%
       html_text2()
 
     if (length(raw_text) == 0) {
@@ -73,16 +72,9 @@ scrape_decisions <- function(min_year = NULL) {
     }
 
     date <- page %>%
-      html_elements("time") %>%
-      html_text() %>%
+      html_elements(".rss-mr-date") %>%
+      html_text2() %>%
       lubridate::dmy()
-
-    if (length(date) == 0) {
-      date <- page %>%
-        html_elements("#content > section > div > div.box-article-info.article-data > div:nth-child(2) > span.value") %>%
-        html_text() %>%
-        lubridate::dmy()
-    }
 
     title <- page %>%
       html_elements("span.rss-mr-title") %>%
@@ -95,6 +87,10 @@ scrape_decisions <- function(min_year = NULL) {
       statement_by <- gsub(":.*", "", title)
       author <- gsub("Statement by the Governor, Mr ", "", statement_by)
     }
+
+    author <- author %>%
+      stringr::str_remove_all(":.*") %>%
+      stringr::str_to_title()
 
     text <- gsub("\r|\n", " ", raw_text) %>%
       stringr::str_squish()
