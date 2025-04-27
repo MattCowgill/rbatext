@@ -6,7 +6,7 @@
 #' @examples
 #' \dontrun{
 #' # Scrape all monetary policy minutes from the RBA website
-#' all_decisions <- read_rba_minutes()
+#' all_minutes<- read_rba_minutes()
 #' }
 #' @import rvest
 #' @export
@@ -18,10 +18,18 @@ read_rba_minutes <- function(refresh = TRUE) {
     return(past_scrape)
   }
 
+  past_scrape <- past_scrape %>%
+    dplyr::select(-.data$cash_rate_change, -.data$cash_rate_level)
+
   new_scrape <- scrape_minutes(min_year = lubridate::year(max(past_scrape$date)))
-  ret <- dplyr::bind_rows(past_scrape, new_scrape) %>%
+  mins <- dplyr::bind_rows(past_scrape, new_scrape) %>%
     dplyr::distinct()
-  return(ret)
+
+  dec_num <- read_rba_decision_table() %>%
+    dplyr::mutate(date = date - 1)
+
+  mins %>%
+    dplyr::left_join(dec_num, by = "date")
 }
 
 scrape_minutes <- function(min_year = NULL) {

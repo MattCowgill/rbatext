@@ -9,6 +9,7 @@
 #' all_decisions <- read_rba_decisions()
 #' }
 #' @import rvest
+#' @importFrom rlang .data
 #' @export
 
 read_rba_decisions <- function(refresh = TRUE) {
@@ -18,10 +19,20 @@ read_rba_decisions <- function(refresh = TRUE) {
     return(past_scrape)
   }
 
+  past_scrape <- past_scrape %>%
+    dplyr::select(-.data$cash_rate_change, -.data$cash_rate_level)
+
   new_scrape <- scrape_decisions(min_year = lubridate::year(max(past_scrape$date)))
-  ret <- dplyr::bind_rows(past_scrape, new_scrape) %>%
+  decisions <- dplyr::bind_rows(past_scrape, new_scrape) %>%
     dplyr::distinct()
-  return(ret)
+
+  dec_num <- read_rba_decision_table() %>%
+    dplyr::mutate(date = dplyr::if_else(date >= lubridate::ymd("2008-02-05"),
+                                        date - 1,
+                                        date))
+
+  decisions %>%
+    dplyr::left_join(dec_num, by = "date")
 }
 
 scrape_decisions <- function(min_year = NULL) {
@@ -62,7 +73,7 @@ scrape_decisions <- function(min_year = NULL) {
       read_html()
 
     raw_text <- page %>%
-      html_elements("#content") %>%
+      html_elements(".rss-mr-content h2 , .rss-mr-content p") %>%
       html_text2()
 
     if (length(raw_text) == 0) {
@@ -75,6 +86,20 @@ scrape_decisions <- function(min_year = NULL) {
       html_elements(".rss-mr-date") %>%
       html_text2() %>%
       lubridate::dmy()
+
+    if (length(date) == 0) {
+      date <- page %>%
+        html_elements("time") %>%
+        html_text2() %>%
+        lubridate::dmy()
+    }
+
+    if (length(date) == 0) {
+      date <- page %>%
+        html_elements(".item+ .item .value") %>%
+        html_text2() %>%
+        lubridate::dmy()
+    }
 
     title <- page %>%
       html_elements("span.rss-mr-title") %>%
@@ -92,7 +117,10 @@ scrape_decisions <- function(min_year = NULL) {
       stringr::str_remove_all(":.*") %>%
       stringr::str_to_title()
 
-    text <- gsub("\r|\n", " ", raw_text) %>%
+    text <- raw_text %>%
+      stringr::str_flatten(collapse = " ") %>%
+      stringr::str_replace_all("\r|\n", " ") %>%
+      stringr::str_replace_all("\\u0092", "'") %>%
       stringr::str_squish()
 
     dplyr::tibble(
@@ -106,7 +134,8 @@ scrape_decisions <- function(min_year = NULL) {
   page_links_long <- unlist(page_links_list)
   page_links <- page_links_long[page_links_long != "https://www.rba.gov.au"]
 
-  monpol_decisions <- purrr::map_dfr(page_links, get_text_from_mr) %>%
+  monpol_decisions <- purrr::map_dfr(page_links, get_text_from_mr,
+                                     .progress = "Reading RBA decisions") %>%
     dplyr::arrange(date)
 
   return(monpol_decisions)

@@ -2,7 +2,7 @@ test_that("read_rba_decisions() returns expected output", {
   all_decisions <- read_rba_decisions()
 
   expect_s3_class(all_decisions, "tbl_df")
-  expect_length(all_decisions, 3)
+  expect_length(all_decisions, 5)
   expect_gt(nrow(all_decisions), 211)
   expect_s3_class(all_decisions$date, "Date")
 

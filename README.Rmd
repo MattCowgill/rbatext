@@ -22,10 +22,9 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/MattCowgill/rbatext/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MattCowgill/rbatext/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The Board of the Reserve Bank of Australia is responsible for monetary policy. It meets 11 times each year. After each meeting, the Governor of the RBA issues a statement outlining the reasons the Board did, or did not, adjust interest rates at that meeting.* 
+This R package enables easy access to the full text of the [Reserve Bank of Australia's](https://www.rba.gov.au/) monetary policy [decisions](https://www.rba.gov.au/monetary-policy/int-rate-decisions/2025/) and [minutes](https://www.rba.gov.au/monetary-policy/rba-board-minutes/2025/).  
 
-This R package contains the text of those decisions in a tidy tibble. It also contains a function - `read_rba_decisions()` - that makes it easy to scrape future decisions from the RBA website. 
-
+The package contains two key functions - `read_rba_decisions()` and `read_rba_minutes()`.
 
 ## Installation
 
@@ -36,13 +35,17 @@ You can install `rbatext` from GitHub with:
 remotes::install_github("MattCowgill/rbatext")
 ```
 
-## RBA decisions
+## Reading RBA decisions and minutes
 
-The key function in the package is `read_rba_decisions()`. You use it like this:
+The functions `read_rba_decisions()` and `read_rba_minutes()` do what they say on the tin:
 
-```{r}
+```{r, eval = FALSE}
 library(rbatext)
-
+```
+```{r, include = FALSE}
+devtools::load_all()
+```
+```{r}
 decisions <- read_rba_decisions()
 
 decisions
@@ -50,8 +53,17 @@ decisions
 
 This returns a tidy tibble containing the full text of each monetary policy decision since 1990. 
 
+```{r}
+minutes <- read_rba_minutes()
 
-### Working with this text data
+minutes
+```
+
+This returns a tidy tibble with the minutes of monetary policy meetings (first of the RBA Board, now of the RBA Monetary Policy Board) since 2006.
+
+The package contains historical text stored as an internal data object. The functions, when run, scrape the RBA website for any new minutes/decisions.
+
+## Example 1: Working with this text data
 
 Here's an example of how to use the wonderful [`{tidytext}`](https://www.tidytextmining.com) package to work with this text data. 
 
@@ -100,14 +112,15 @@ year_tfidfs %>%
   group_by(year) %>% 
   mutate(rank = rank(desc(tf_idf),
                      ties.method = "first")) %>% 
-  filter(rank <= 3) %>% 
+  filter(rank <= 5) %>% 
   arrange(rank) %>% 
   group_by(year) %>% 
   summarise(top_words = paste(word, collapse = ", ")) %>% 
   knitr::kable()
 ```
 
-### The small print 
+
+## The small print 
 *Prior to December 2007, a media release was only issued if the Board decided to adjust monetary policy. Since that time, statements have been issued after each meeting, regardless of the outcome.
 
 Note that this package has an 'experimental' badge. The package works and is stable. However, changes to the format or structure of the RBA website would break the package's key function. For this reason, the function is somewhat 'brittle'. I do not intend to submit this package to CRAN. I may at some point merge this package with [readrba](https://github.com/MattCowgill/readrba).
