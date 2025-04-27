@@ -6,7 +6,7 @@
 #' @examples
 #' \dontrun{
 #' # Scrape all monetary policy minutes from the RBA website
-#' all_decisions <- read_rba_minutes()
+#' all_minutes<- read_rba_minutes()
 #' }
 #' @import rvest
 #' @export

@@ -17,7 +17,7 @@ Scrape minutes of RBA Board/Monetary Policy Board in a tidy tibble
 \examples{
 \dontrun{
 # Scrape all monetary policy minutes from the RBA website
-all_decisions <- read_rba_minutes()
+all_minutes<- read_rba_minutes()
 }
 }
 \author{
