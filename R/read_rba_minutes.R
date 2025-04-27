@@ -19,7 +19,7 @@ read_rba_minutes <- function(refresh = TRUE) {
   }
 
   past_scrape <- past_scrape %>%
-    dplyr::select(-cash_rate_change, -cash_rate_level)
+    dplyr::select(-.data$cash_rate_change, -.data$cash_rate_level)
 
   new_scrape <- scrape_minutes(min_year = lubridate::year(max(past_scrape$date)))
   mins <- dplyr::bind_rows(past_scrape, new_scrape) %>%

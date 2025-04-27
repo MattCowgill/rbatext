@@ -26,12 +26,12 @@ read_rba_decision_table <- function() {
   }
 
   raw_table %>%
-    dplyr::select(date = 1,
-           cash_rate_change = 2,
-           cash_rate_level = 3) %>%
+    dplyr::select("date" = 1,
+                  "cash_rate_change" = 2,
+                  "cash_rate_level" = 3) %>%
     dplyr::filter(!stringr::str_detect(date,
                               "Legend|Cash rate")) %>%
-    dplyr::mutate(across(starts_with("cash_rate"),
+    dplyr::mutate(dplyr::across(dplyr::starts_with("cash_rate"),
                          \(x) purrr::map_dbl(x, midpoint_if_range))) %>%
     dplyr::mutate(date = lubridate::dmy(date))
 }
